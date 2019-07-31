@@ -1,0 +1,13 @@
+[package]
+name = "BitCruster"
+version = "0.1.0"
+authors = ["Clément Audebert <clement.audebert@earthcube.eu>"]
+edition = "2018"
+
+[dependencies]
+vst = "0.1.0"
+
+[lib]
+name = "BitCruster"
+crate-type = ["cdylib"]
+
