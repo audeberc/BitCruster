@@ -53,7 +53,7 @@ impl Plugin for BitCruster {
 
     fn get_parameter_label(&self, index: i32) -> String {
     match index {
-        0 => "%".to_string(),
+        0 => format!("{:.1} bits",(self.bit_reduction*14.0) + 2.0 ),
         1 => "%".to_string(),
         _ => "".to_string(),
         }
@@ -61,7 +61,7 @@ impl Plugin for BitCruster {
     fn process(&mut self,  buffer: &mut AudioBuffer<f32>) {
 
     let (inputs, outputs) = buffer.split();
-    let bits = self.bit_reduction * 32.0;
+    let bits = (self.bit_reduction * 14.0) + 2.0 ; // set to 2 - 16  bits range
     let max_value = (bits * bits) - 1.0; // pow(bits, 2) is for losers
     
     for (input_buffer, output_buffer) in inputs.into_iter().zip(outputs.into_iter()) {
