@@ -49,7 +49,7 @@ impl Plugin for BitCruster {
     fn get_parameter_name(&self, index: i32) -> String {
     match index {
         0 => "Bit Reduction".to_string(),
-        1 => "Sampling Rate".to_string(),
+        1 => "Decimation".to_string(),
         2 => "Mix".to_string(),
         _ => "".to_string(),
         }
@@ -58,7 +58,7 @@ impl Plugin for BitCruster {
     fn get_parameter_label(&self, index: i32) -> String {
     match index {
         0 => format!("{:.1} bits",(self.bit_reduction*30.0) + 2.0 ),
-        1 => "%".to_string(),
+        1 => format!("1 / {} samples",(1.0/self.sampling_rate).floor()),
         _ => "".to_string(),
         }
     }
@@ -67,12 +67,18 @@ impl Plugin for BitCruster {
     let (inputs, outputs) = buffer.split();
     let bits = (self.bit_reduction * 30.0) + 2.0 ; // set to 2 - 16  bits range
     let max_value = (bits * bits) - 1.0; // pow(bits, 2) is for losers
-    
+    let decimation = (1.0/self.sampling_rate).floor() as i64;
+    let mut counter = 0;
+    let mut hold_value = 0.0;
     for (input_buffer, output_buffer) in inputs.into_iter().zip(outputs.into_iter()) {
         for (input_sample, output_sample) in input_buffer.iter().zip(output_buffer) {
+            if counter % decimation == 0
+                { 
+                  hold_value = (2.0*(((input_sample + 1.0) * (max_value/2.0)).floor() / max_value) - 1.0);
+                }      
 
-            *output_sample = self.mix*(2.0*(((input_sample + 1.0) * (max_value/2.0)).floor() / max_value) - 1.0) + (1.0-self.mix)* input_sample ;
-                
+            *output_sample = self.mix * hold_value + (1.0 - self.mix)* input_sample;
+            counter += 1;
             }
         }
     }
